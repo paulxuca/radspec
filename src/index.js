@@ -11,6 +11,8 @@
  * @module radspec
  */
 const ABI = require('web3-eth-abi')
+const MetadataDAO = require('metadata-dao')
+
 const scanner = require('./scanner')
 const parser = require('./parser')
 const evaluator = require('./evaluator')
@@ -103,10 +105,51 @@ function evaluate (source, call, options = {}) {
   return evaluateRaw(source, parameters, { ...options, to: call.transaction.to })
 }
 
+async function metadataDAOEvaluate (call, options = {}) {
+  const metadataDAO = new MetadataDAO()
+
+  // Get method ID
+  const { to, data } = call.transaction
+  const methodId = data.substr(0, 10)
+
+  const fn = await metadataDAO.query('radspec', 'sig', methodId)
+
+  if (!fn) {
+    return null
+  }
+
+  // If the function was found in local radspec registry. Decode and evaluate.
+  const { notice: source, signature: sig } = fn
+
+  // get the array of input types from the function signature
+  const inputString = sig.replace(')', '').split('(')[1]
+
+  let parameters = []
+
+  // If the function has parameters
+  if (inputString !== '') {
+    const inputs = inputString.split(',')
+
+    // Decode parameters
+    const parameterValues = ABI.decodeParameters(inputs, '0x' + data.substr(10))
+    parameters = inputs.reduce((acc, input, i) => (
+      {
+        [`$${i + 1}`]: {
+          type: input,
+          value: parameterValues[i]
+        },
+        ...acc
+      }), {})
+  }
+
+  return await evaluateRaw(source, parameters, { ...options, to })
+}
+
 module.exports = {
   scan: scanner.scan,
   parse: parser.parse,
 
   evaluateRaw,
-  evaluate
+  evaluate,
+  metadataDAOEvaluate
 }
