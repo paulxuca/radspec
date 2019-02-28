@@ -3,6 +3,7 @@
  */
 
 import BN from 'bn.js';
+import flattenDeep from 'lodash.flattendeep';
 import types from '../types';
 import HelperManager from '../helpers/HelperManager';
 import { DEFAULT_ETH_NODE, abiCoder } from '../defaults';
@@ -347,20 +348,37 @@ export class Evaluator {
   async evaluate() {
     const evaluatedNodes = await this.evaluateNodes(this.ast.body);
 
+    const flattenedEvaluatedNodes = evaluatedNodes.map(evaluatedNode => {
+      if (Array.isArray(evaluatedNode)) {
+        return flattenDeep(evaluatedNode);
+      }
+
+      return evaluatedNode;
+    });
+
     if (this.returnType === 'object') {
-      return evaluatedNodes.map(evaluatedNode => {
-        evaluatedNode = Array.isArray(evaluatedNode)
-          ? evaluatedNode[0]
-          : evaluatedNode;
+      return flattenedEvaluatedNodes.map(evaluatedNode => {
+        if (Array.isArray(evaluatedNode)) {
+          return evaluatedNode.map(({ objValue, value, type }) => ({
+            type,
+            value: objValue || value,
+          }));
+        }
 
         return {
-          value: evaluatedNode.objValue || evaluatedNode.value,
           type: evaluatedNode.type,
+          value: evaluatedNode.objValue || evaluatedNode.value,
         };
       });
     }
 
-    return evaluatedNodes.join('');
+    return evaluatedNodes.reduce((stringReturn, evaluatedNode) => {
+      if (Array.isArray(evaluatedNode)) {
+        return `${stringReturn}${evaluatedNode.join(' ')}`;
+      }
+
+      return `${stringReturn}${evaluatedNode}`;
+    }, '');
   }
 
   /**

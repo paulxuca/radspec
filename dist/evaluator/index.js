@@ -10,6 +10,8 @@ exports.Evaluator = void 0;
 
 var _bn = _interopRequireDefault(require("bn.js"));
 
+var _lodash = _interopRequireDefault(require("lodash.flattendeep"));
+
 var _types = _interopRequireDefault(require("../types"));
 
 var _HelperManager = _interopRequireDefault(require("../helpers/HelperManager"));
@@ -341,18 +343,41 @@ class Evaluator {
 
   async evaluate() {
     const evaluatedNodes = await this.evaluateNodes(this.ast.body);
+    const flattenedEvaluatedNodes = evaluatedNodes.map(evaluatedNode => {
+      if (Array.isArray(evaluatedNode)) {
+        return (0, _lodash.default)(evaluatedNode);
+      }
+
+      return evaluatedNode;
+    });
 
     if (this.returnType === 'object') {
-      return evaluatedNodes.map(evaluatedNode => {
-        evaluatedNode = Array.isArray(evaluatedNode) ? evaluatedNode[0] : evaluatedNode;
+      return flattenedEvaluatedNodes.map(evaluatedNode => {
+        if (Array.isArray(evaluatedNode)) {
+          return evaluatedNode.map(({
+            objValue,
+            value,
+            type
+          }) => ({
+            type,
+            value: objValue || value
+          }));
+        }
+
         return {
-          value: evaluatedNode.objValue || evaluatedNode.value,
-          type: evaluatedNode.type
+          type: evaluatedNode.type,
+          value: evaluatedNode.objValue || evaluatedNode.value
         };
       });
     }
 
-    return evaluatedNodes.join('');
+    return evaluatedNodes.reduce((stringReturn, evaluatedNode) => {
+      if (Array.isArray(evaluatedNode)) {
+        return `${stringReturn}${evaluatedNode.join(' ')}`;
+      }
+
+      return `${stringReturn}${evaluatedNode}`;
+    }, '');
   }
   /**
    * Report an error and abort evaluation.
