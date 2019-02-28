@@ -1,9 +1,13 @@
-import BN from 'bn.js'
-import { toUtf8 } from 'web3-utils'
-import { ERC20_SYMBOL_BYTES32_ABI, ERC20_SYMBOL_DECIMALS_ABI, ETH } from './lib/token'
-import { formatBN, tenPow } from './lib/formatBN'
+import BN from 'bn.js';
+import { ethers } from 'ethers';
+import {
+  ERC20_SYMBOL_BYTES32_ABI,
+  ERC20_SYMBOL_DECIMALS_ABI,
+  ETH,
+} from './lib/token';
+import { formatBN, tenPow } from './lib/formatBN';
 
-export default (eth) =>
+export default provider =>
   /**
    * Format token amounts taking decimals into account
    *
@@ -14,36 +18,49 @@ export default (eth) =>
    * @return {Promise<radspec/evaluator/TypedValue>}
    */
   async (tokenAddress, amount, showSymbol = true, precision = 2) => {
-    const amountBn = new BN(amount)
+    const amountBn = new BN(amount);
 
-    let decimals
-    let symbol
+    let decimals;
+    let symbol;
 
     if (tokenAddress === ETH) {
-      decimals = new BN(18)
+      decimals = new BN(18);
       if (showSymbol) {
-        symbol = 'ETH'
+        symbol = 'ETH';
       }
     } else {
-      let token = new eth.Contract(ERC20_SYMBOL_DECIMALS_ABI, tokenAddress)
+      let token = new ethers.Contract(
+          tokenAddress,
+          ERC20_SYMBOL_DECIMALS_ABI,
+          provider
+      );
 
-      decimals = new BN(await token.methods.decimals().call())
+      decimals = new BN(await token.functions.decimals());
       if (showSymbol) {
         try {
-          symbol = await token.methods.symbol().call() || ''
+          symbol = (await token.functions.symbol()) || '';
         } catch (err) {
           // Some tokens (e.g. DS-Token) use bytes32 for their symbol()
-          token = new eth.Contract(ERC20_SYMBOL_BYTES32_ABI, tokenAddress)
-          symbol = await token.methods.symbol().call() || ''
-          symbol = symbol && toUtf8(symbol)
+          token = new ethers.Contract(
+              tokenAddress,
+              ERC20_SYMBOL_BYTES32_ABI,
+              provider
+          );
+
+          symbol = (await token.functions.symbol()) || '';
+          symbol = symbol && ethers.utils.toUtf8String(symbol);
         }
       }
     }
 
-    const formattedAmount = formatBN(amountBn, tenPow(decimals), Number(precision))
+    const formattedAmount = formatBN(
+        amountBn,
+        tenPow(decimals),
+        Number(precision)
+    );
 
     return {
       type: 'string',
-      value: showSymbol ? `${formattedAmount} ${symbol}` : formattedAmount
-    }
-  }
+      value: showSymbol ? `${formattedAmount} ${symbol}` : formattedAmount,
+    };
+  };
