@@ -113,7 +113,7 @@ export class Evaluator {
     if (node.type === 'ExpressionStatement') {
       const evaluatedNodes = await this.evaluateNodes(node.body);
 
-      return evaluatedNodes.join(' ');
+      return evaluatedNodes;
     }
 
     if (node.type === 'GroupedExpression') {
@@ -372,7 +372,7 @@ export class Evaluator {
       });
     }
 
-    return evaluatedNodes.reduce((stringReturn, evaluatedNode) => {
+    return flattenedEvaluatedNodes.reduce((stringReturn, evaluatedNode) => {
       if (Array.isArray(evaluatedNode)) {
         return `${stringReturn}${evaluatedNode.join(' ')}`;
       }
