@@ -9,6 +9,6 @@ var _web3EthAbi = require("web3-eth-abi");
 
 const DEFAULT_ETH_NODE = 'https://mainnet.eth.aragon.network';
 exports.DEFAULT_ETH_NODE = DEFAULT_ETH_NODE;
-const abiCoder = new _web3EthAbi.AbiCoder();
+const abiCoder = (0, _web3EthAbi.AbiCoder)();
 exports.abiCoder = abiCoder;
 //# sourceMappingURL=defaults.js.map
