@@ -4,7 +4,8 @@
   "description": "Radspec is a safe alternative to Ethereum's natspec",
   "main": "dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "index.d.ts"
   ],
   "types": "index.d.ts",
   "scripts": {
