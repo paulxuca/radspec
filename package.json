@@ -6,6 +6,7 @@
   "files": [
     "dist"
   ],
+  "types": "index.d.ts",
   "scripts": {
     "docs": "documentation build src/index.js -f md -o docs/API.md --shallow",
     "lint": "standard \"src/**/*.js\" && documentation lint \"src/**/*.js\"",
