@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../src/types/list.js"],"names":["isType","identifier","endsWith"],"mappings":";;;;;;eAAe;AACbA,EAAAA,MAAM,CAACC,UAAD,EAAa;AACjB,WAAOA,UAAU,CAACC,QAAX,CAAoB,IAApB,CAAP;AACD;;AAHY,C","sourcesContent":["export default {\n  isType(identifier) {\n    return identifier.endsWith('[]');\n  },\n};\n"],"file":"list.js"}

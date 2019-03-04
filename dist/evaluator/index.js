@@ -49,6 +49,13 @@ class TypedValue {
       };
     }
 
+    if (_types.default.isList(type)) {
+      const elementType = type.replace('[]', '');
+      this.value = this.value.map(value => {
+        return new TypedValue(elementType, value);
+      });
+    }
+
     if (type === 'address') {
       this.value = _ethers.ethers.utils.getAddress(this.value);
     }
@@ -354,6 +361,13 @@ class Evaluator {
     if (this.returnType === 'object') {
       return flattenedEvaluatedNodes.map(evaluatedNode => {
         if (Array.isArray(evaluatedNode)) {
+          if (evaluatedNode.length === 1) {
+            return {
+              type: evaluatedNode[0].type,
+              value: evaluatedNode[0].objValue || evaluatedNode[0].value
+            };
+          }
+
           return evaluatedNode.map(({
             objValue,
             value,

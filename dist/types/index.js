@@ -21,6 +21,8 @@ var _string = _interopRequireDefault(require("./string"));
 
 var _fixed = _interopRequireDefault(require("./fixed"));
 
+var _list = _interopRequireDefault(require("./list"));
+
 var _ufixed = _interopRequireDefault(require("./ufixed"));
 
 var _default = {
@@ -32,7 +34,8 @@ var _default = {
     bytes: _bytes.default,
     string: _string.default,
     fixed: _fixed.default,
-    ufixed: _ufixed.default
+    ufixed: _ufixed.default,
+    list: _list.default
   },
 
   isType(identifier) {
@@ -49,6 +52,10 @@ var _default = {
 
   isInteger(identifier) {
     return this.types.int.isType(identifier) || this.types.uint.isType(identifier);
+  },
+
+  isList(identifier) {
+    return this.types.list.isType(identifier);
   },
 
   isAddress(identifier) {
