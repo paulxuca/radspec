@@ -30,7 +30,16 @@ class TypedValue {
   castValue(type) {
     if (types.isInteger(type) && !BN.isBN(this.value)) {
       this.value = new BN(this.value);
+
       this.objValue = { hex: `0x${this.value.toString(16)}` };
+    }
+
+    if (types.isList(type)) {
+      const elementType = type.replace('[]', '');
+
+      this.value = this.value.map(value => {
+        return new TypedValue(elementType, value);
+      });
     }
 
     if (type === 'address') {
@@ -359,6 +368,13 @@ export class Evaluator {
     if (this.returnType === 'object') {
       return flattenedEvaluatedNodes.map(evaluatedNode => {
         if (Array.isArray(evaluatedNode)) {
+          if (evaluatedNode.length === 1) {
+            return {
+              type: evaluatedNode[0].type,
+              value: evaluatedNode[0].objValue || evaluatedNode[0].value,
+            };
+          }
+
           return evaluatedNode.map(({ objValue, value, type }) => ({
             type,
             value: objValue || value,

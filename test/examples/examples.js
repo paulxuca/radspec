@@ -34,6 +34,11 @@ const bytes = value => ({
   value,
 });
 
+const intList = (value = []) => ({
+  type: 'int256[]',
+  value,
+});
+
 const comparisonCases = [
   [
     {
@@ -528,6 +533,13 @@ const cases = [
       bindings: { _bool: bool(true), _var: string('ell') },
     },
     'hello',
+  ],
+  [
+    {
+      source: 'A list: `tokenIds`',
+      bindings: { tokenIds: intList(['111', '222', '333']) },
+    },
+    'A list: 111,222,333',
   ],
 
   ...comparisonCases,

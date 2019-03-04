@@ -5,6 +5,7 @@ import address from './address';
 import bytes from './bytes';
 import string from './string';
 import fixed from './fixed';
+import list from './list';
 import ufixed from './ufixed';
 
 export default {
@@ -17,6 +18,7 @@ export default {
     string,
     fixed,
     ufixed,
+    list,
   },
 
   isType(identifier) {
@@ -35,6 +37,10 @@ export default {
     return (
       this.types.int.isType(identifier) || this.types.uint.isType(identifier)
     );
+  },
+
+  isList(identifier) {
+    return this.types.list.isType(identifier);
   },
 
   isAddress(identifier) {
